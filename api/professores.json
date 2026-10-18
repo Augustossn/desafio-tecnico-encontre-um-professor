@@ -1,0 +1,254 @@
+{
+  "professores": [
+    {
+      "id": 1,
+      "nome": "Ana",
+      "idiomas": [
+        "Inglês",
+        "Espanhol"
+      ],
+      "agendaBloqueada": false,
+      "disponibilidade": [
+        {
+          "dia": "segunda",
+          "inicio": "18:00",
+          "fim": "22:00"
+        },
+        {
+          "dia": "quarta",
+          "inicio": "18:00",
+          "fim": "22:00"
+        }
+      ],
+      "aulasMarcadas": [
+        {
+          "dia": "segunda",
+          "inicio": "19:00",
+          "duracaoMinutos": 60
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "nome": "Bruno",
+      "idiomas": [
+        "Inglês"
+      ],
+      "agendaBloqueada": false,
+      "disponibilidade": [
+        {
+          "dia": "segunda",
+          "inicio": "18:00",
+          "fim": "21:00"
+        },
+        {
+          "dia": "terca",
+          "inicio": "18:00",
+          "fim": "20:00"
+        },
+        {
+          "dia": "quarta",
+          "inicio": "18:00",
+          "fim": "19:00"
+        },
+        {
+          "dia": "quarta",
+          "inicio": "20:00",
+          "fim": "22:00"
+        },
+        {
+          "dia": "quinta",
+          "inicio": "18:00",
+          "fim": "20:00"
+        }
+      ],
+      "aulasMarcadas": [
+        {
+          "dia": "terca",
+          "inicio": "18:00",
+          "duracaoMinutos": 60
+        },
+        {
+          "dia": "quinta",
+          "inicio": "18:00",
+          "duracaoMinutos": 60
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "nome": "Carla",
+      "idiomas": [
+        "Inglês"
+      ],
+      "agendaBloqueada": true,
+      "disponibilidade": [
+        {
+          "dia": "segunda",
+          "inicio": "08:00",
+          "fim": "22:00"
+        },
+        {
+          "dia": "quarta",
+          "inicio": "08:00",
+          "fim": "22:00"
+        }
+      ],
+      "aulasMarcadas": []
+    },
+    {
+      "id": 4,
+      "nome": "Diego",
+      "idiomas": [
+        "Espanhol"
+      ],
+      "agendaBloqueada": false,
+      "disponibilidade": [
+        {
+          "dia": "segunda",
+          "inicio": "18:00",
+          "fim": "22:00"
+        },
+        {
+          "dia": "terca",
+          "inicio": "08:00",
+          "fim": "12:00"
+        },
+        {
+          "dia": "quarta",
+          "inicio": "18:00",
+          "fim": "22:00"
+        }
+      ],
+      "aulasMarcadas": [
+        {
+          "dia": "terca",
+          "inicio": "08:30",
+          "duracaoMinutos": 30
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "nome": "Elisa",
+      "idiomas": [
+        "Inglês"
+      ],
+      "agendaBloqueada": false,
+      "disponibilidade": [
+        {
+          "dia": "segunda",
+          "inicio": "18:00",
+          "fim": "22:00"
+        }
+      ],
+      "aulasMarcadas": []
+    },
+    {
+      "id": 6,
+      "nome": "Fábio",
+      "idiomas": [
+        "Inglês"
+      ],
+      "agendaBloqueada": false,
+      "disponibilidade": [
+        {
+          "dia": "segunda",
+          "inicio": "18:15",
+          "fim": "20:00"
+        },
+        {
+          "dia": "quarta",
+          "inicio": "18:15",
+          "fim": "20:00"
+        },
+        {
+          "dia": "sexta",
+          "inicio": "09:00",
+          "fim": "12:00"
+        }
+      ],
+      "aulasMarcadas": [
+        {
+          "dia": "sexta",
+          "inicio": "10:00",
+          "duracaoMinutos": 60
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "nome": "Gabriela",
+      "idiomas": [
+        "Inglês"
+      ],
+      "agendaBloqueada": false,
+      "disponibilidade": [
+        {
+          "dia": "segunda",
+          "inicio": "17:00",
+          "fim": "23:00"
+        },
+        {
+          "dia": "quarta",
+          "inicio": "17:00",
+          "fim": "23:00"
+        }
+      ],
+      "aulasMarcadas": [
+        {
+          "dia": "segunda",
+          "inicio": "18:00",
+          "duracaoMinutos": 30
+        },
+        {
+          "dia": "quarta",
+          "inicio": "20:30",
+          "duracaoMinutos": 60
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "nome": "Heitor",
+      "idiomas": [
+        "Inglês"
+      ],
+      "agendaBloqueada": false,
+      "disponibilidade": [
+        {
+          "dia": "segunda",
+          "inicio": "18:00",
+          "fim": "21:00"
+        },
+        {
+          "dia": "quarta",
+          "inicio": "18:00",
+          "fim": "21:00"
+        }
+      ],
+      "aulasMarcadas": [
+        {
+          "dia": "segunda",
+          "inicio": "19:00",
+          "duracaoMinutos": 60
+        },
+        {
+          "dia": "segunda",
+          "inicio": "20:00",
+          "duracaoMinutos": 60
+        },
+        {
+          "dia": "quarta",
+          "inicio": "18:00",
+          "duracaoMinutos": 60
+        },
+        {
+          "dia": "quarta",
+          "inicio": "19:00",
+          "duracaoMinutos": 60
+        }
+      ]
+    }
+  ]
+}

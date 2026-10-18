@@ -1,130 +1,148 @@
-# Desafio técnico: Encontre um Professor
+# Língua — busca de professores
 
-## Contexto
+API em C# / .NET 8 e interface React com TypeScript. Os dados oficiais estão versionados em `api/professores.json` e são carregados em memória na inicialização. Não há dependência de rede durante a busca.
 
-Uma escola de idiomas precisa encontrar professores disponíveis para cada novo aluno. O aluno informa o idioma, os dias da semana, a faixa de horário em que pode ter aula e a duração da aula; o sistema devolve os professores que conseguem atendê-lo e em quais horários.
+## Executar
 
-Você vai construir uma API em C# que resolve essa busca e uma tela em React para usá-la.
+Requisitos: SDK .NET 8 e Node.js 22.12+ (ou 24 LTS), com npm.
 
-**Estimativa:** 6 a 8 horas de trabalho. O prazo de entrega é informado no convite do processo seletivo.
+No Windows, também é possível iniciar a API com dois cliques em `iniciar-api.cmd`, mantendo a janela aberta. O arquivo usa o SDK .NET instalado e não exige caminhos pessoais. O frontend continua sendo iniciado com os comandos abaixo.
 
-## Como começar
+Na raiz deste projeto, em um terminal:
 
-1. Clique em **Use this template** para criar o seu próprio repositório a partir deste.
-2. Desenvolva a solução no seu repositório.
-3. Envie o link pelo mesmo canal em que recebeu o desafio. O repositório precisa estar público ou com acesso liberado para quem enviou o desafio.
-
-## Dados
-
-Os professores estão em [`professores.json`](professores.json). Carregue-os desse arquivo; você pode mantê-los em memória.
-
-Cada professor tem:
-
-| Campo | Descrição |
-|---|---|
-| `id`, `nome` | Identificação do professor |
-| `idiomas` | Idiomas que ele ensina |
-| `agendaBloqueada` | Quando `true`, o professor não pode receber novos alunos |
-| `disponibilidade` | Blocos semanais em que ele pode dar aula (`dia`, `inicio`, `fim`) |
-| `aulasMarcadas` | Aulas que ele já tem na semana (`dia`, `inicio`, `duracaoMinutos`) |
-
-**Garantias dos dados:**
-
-- Horários no formato `HH:mm`.
-- Nada atravessa a meia-noite.
-- Blocos de disponibilidade de um mesmo dia nunca se sobrepõem nem se encostam.
-- Dias da semana: `segunda`, `terca`, `quarta`, `quinta`, `sexta`, `sabado`, `domingo`.
-
-## O que construir
-
-### 1. API (C# e .NET 8)
-
-`POST /api/professores/busca`
-
-**Requisição:**
-
-```json
-{
-  "idioma": "Espanhol",
-  "dias": ["segunda"],
-  "inicioFaixa": "18:00",
-  "fimFaixa": "20:00",
-  "duracaoMinutos": 60
-}
+```sh
+dotnet run --project api --urls http://localhost:5080
 ```
 
-**Resposta:**
+Em outro terminal:
 
-```json
-{
-  "professores": [
-    { "id": 1, "nome": "Ana",   "aulasNaSemana": 1, "horarios": ["18:00"] },
-    { "id": 4, "nome": "Diego", "aulasNaSemana": 1, "horarios": ["18:00", "18:30", "19:00"] }
-  ],
-  "naoElegiveis": [
-    { "id": 2, "nome": "Bruno", "motivo": "Não ensina o idioma" }
-  ]
-}
+```sh
+cd web
+npm ci
+npm run dev
 ```
 
-A lista `naoElegiveis` do exemplo está resumida a um item.
+Abra http://127.0.0.1:5173. O servidor do Vite encaminha `/api` para `http://localhost:5080`, dispensando CORS em desenvolvimento. Se mudar a porta da API, ajuste `web/vite.config.ts`.
 
-### 2. Regras da busca
+## Documentação interativa (Swagger)
 
-1. O professor precisa ensinar o idioma pedido.
-2. Professor com agenda bloqueada não aparece.
-3. **O aluno quer horário fixo:** o mesmo horário de início precisa estar livre em **todos** os dias pedidos.
-4. A aula precisa caber **inteira** dentro de um bloco de disponibilidade do professor e dentro da faixa pedida pelo aluno.
-5. A aula não pode se sobrepor a uma aula já marcada. **Encostar é permitido:** uma aula que termina às 19:00 permite outra começando às 19:00.
-6. A aula só pode começar em hora cheia ou meia hora (`:00` ou `:30`).
-7. **Ordenação:** primeiro quem tem menos aulas marcadas na semana; em caso de empate, ordem alfabética do nome. Os horários de cada professor vêm em ordem crescente.
+Com a API em execução, abra **http://localhost:5080/swagger**. O endereço raiz http://localhost:5080/ também redireciona para essa documentação.
 
-**Diferencial:** preencher `naoElegiveis` com o motivo de cada professor que ficou de fora, usando exatamente um destes textos:
+Expanda `POST /api/professores/busca`, clique em **Try it out** e depois em **Execute**. O exemplo já vem preenchido com a busca por Espanhol na segunda-feira, das 18:00 às 20:00, por 60 minutos. A documentação inclui os contratos e exemplos de resposta 200 e 400, tanto para validação quanto para JSON inválido.
 
-- `Não ensina o idioma`
-- `Agenda bloqueada`
-- `Sem horário em comum nos dias pedidos`
+O documento OpenAPI está em http://localhost:5080/swagger/v1/swagger.json. O Swagger fica habilitado em todos os ambientes para facilitar a avaliação local, inclusive pelo arquivo `iniciar-api.cmd`. Em uma implantação pública, revise essa decisão conforme a política do ambiente.
 
-Quando houver mais de um motivo, informe o primeiro nessa ordem.
+## Testar e compilar
 
-### 3. Validação
+Na raiz:
 
-A API responde **400** com uma mensagem clara quando:
+```sh
+dotnet test tests/Idiomas.Tests.csproj
+dotnet build api/Idiomas.Api.csproj
+cd web
+npm run build
+```
 
-- o idioma está vazio;
-- nenhum dia foi informado;
-- algum dia é inválido;
-- algum horário está fora do formato `HH:mm`;
-- o fim da faixa é igual ou anterior ao início;
-- a duração é diferente de 30, 60 ou 90 minutos.
+Os 19 testes de unidade instanciam diretamente `BuscaService`, sem subir a API. Cobrem interseção de dias, sobreposição parcial, contato entre aulas, blocos separados, faixa inteira, grade de meia hora, três durações, prioridade de motivos, ordenação, normalização e validações.
 
-### 4. Tela (React, de preferência com TypeScript)
+Outros 16 casos HTTP usam `WebApplicationFactory`/`TestServer` em memória, sem abrir portas nem exigir que a API esteja rodando. Conferem o contrato 200, lista vazia, cada validação 400, JSON malformado, tipos incorretos, o documento e a página Swagger e o redirecionamento da raiz. O total C# é **35 casos**, contando os parametrizados. A solução `Idiomas.sln` ajuda a infraestrutura de testes a localizar o projeto.
 
-- **Formulário:** idioma (Inglês, Espanhol ou Francês), dias da semana, faixa de horário e duração.
-- **Resultado:** cada professor com os horários possíveis e a quantidade de aulas na semana.
-- **Estados:** carregando, nenhum professor encontrado, falha de comunicação com a API e erros de validação devolvidos pela API.
-- **Diferencial:** mostrar os professores que ficaram de fora e o motivo.
+### Testes da interação de horários
 
-### 5. Testes
+Na pasta `web`, após `npm ci`:
 
-No mínimo **5 testes automatizados em C#** sobre as regras da busca. Os testes não devem depender de subir a API.
+```sh
+npx playwright install chromium
+npm run test:e2e
+```
 
-## Se algo não estiver coberto
+São **16 testes de navegador**: 7 para escolha de horários e 9 para estados da busca. Conferem atalhos, teclado, digitação, rolagem, cancelamento, minutos precisos e celular; mensagens de faixa curta, idioma ausente e agendas bloqueadas; ajustes e novas requisições; foco nos campos; resumo de exclusões; carregamento, validação e falha de comunicação. O Playwright sobe a tela na porta 5174; os testes não exigem a API. Respostas HTTP são simuladas para verificar o comportamento da interface, sem substituir os testes C# das regras e da camada HTTP.
 
-Se encontrar uma situação que as regras não cobrem, decida, implemente e registre a decisão no README. Isso faz parte da avaliação.
+Também é possível usar o Edge já instalado. No PowerShell:
 
-## Entrega
+```powershell
+$env:PLAYWRIGHT_CHANNEL = 'msedge'
+npm run test:e2e
+```
 
-- **`README.md`** no seu repositório, com: como rodar a API e a tela, as decisões que você tomou e o que ficou faltando.
-- **`USO_DE_IA.md`**, com: quais ferramentas de IA você usou, como usou e **pelo menos um caso em que a IA errou** e como você percebeu. Usar IA é permitido; o que avaliamos é se você entende tudo o que entregou.
+## Contrato
 
-## O que vamos avaliar
+`POST /api/professores/busca`, com `Content-Type: application/json`:
 
-1. As regras estão corretas, inclusive nos casos de fronteira.
-2. Os testes provam as regras.
-3. O código é organizado, com a regra de negócio separada da camada HTTP.
-4. A validação e o tratamento de erros funcionam.
-5. A tela cobre todos os estados.
-6. O README é claro e registra as decisões.
+```json
+{"idioma":"Espanhol","dias":["segunda"],"inicioFaixa":"18:00","fimFaixa":"20:00","duracaoMinutos":60}
+```
 
-Na entrevista técnica, você vai apresentar a solução e fazer uma pequena alteração ao vivo.
+```json
+{"professores":[{"id":1,"nome":"Ana","aulasNaSemana":1,"horarios":["18:00"]},{"id":4,"nome":"Diego","aulasNaSemana":1,"horarios":["18:00","18:30","19:00"]}],"naoElegiveis":[{"id":2,"nome":"Bruno","motivo":"Não ensina o idioma"}]}
+```
+
+A lista de não elegíveis acima está resumida; a API devolve todos. Campos inválidos retornam 400 com `title` e `errors` (mapa de campo para lista de mensagens). JSON malformado ou tipos incorretos retornam 400 com `mensagem`.
+
+## Organização e algoritmo
+
+- `api/Models.cs`: contratos e dados.
+- `api/BuscaService.cs`: validação e regra de negócio independente de HTTP.
+- `api/Program.cs`: carregamento do JSON, injeção e endpoint.
+- `tests/BuscaTests.cs`: testes de unidade com dados específicos de cada cenário.
+- `tests/HttpTests.cs`: verificações da camada HTTP, contratos e Swagger, em servidor em memória.
+- `web/src/main.tsx`: inicialização com StrictMode e configuração de movimento reduzido.
+- `web/src/App.tsx`: composição da página e estado do formulário.
+- `web/src/SearchForm.tsx`: controles acessíveis e seletores animados.
+- `web/src/Results.tsx`: estados da consulta, cards e visualização de horário.
+- `web/src/useTeacherSearch.ts`: hook com comunicação HTTP, cancelamento, timeout e proteção contra respostas antigas.
+- `web/src/types.ts`: contratos TypeScript e configuração dos dias.
+- `web/src/TimeRangeField.tsx`: faixa de horários, atalhos e resumo da duração disponível.
+- `web/src/TimePicker.tsx`: seletor com rolagem, teclado e entrada precisa, usando Radix Popover para foco e posicionamento.
+- `web/e2e/time-picker.spec.ts`: testes automatizados da escolha de horário.
+- `web/src/EmptySearchResult.tsx`: explicação do resultado vazio e ações para rever a consulta.
+- `web/e2e/search-states.spec.ts`: testes das mensagens, sugestões e estados da busca.
+- `.github/workflows/ci.yml`: compilação e testes automáticos no GitHub.
+
+Para cada professor, a busca verifica idioma e bloqueio nessa ordem. Depois enumera os inícios na grade de 30 minutos dentro da faixa do aluno. Um início só entra se, em **todos** os dias, a aula couber em um único bloco e não intersectar aulas existentes. Intervalos são tratados como `[início, fim)`: o conflito é `inicio < fimExistente && inicioExistente < fim`. Assim, encostar é permitido. Na ausência de início comum, registra o terceiro motivo.
+
+## Decisões
+
+- Idioma ignora maiúsculas e espaços nas pontas, mas preserva acentos. Idioma não vazio e desconhecido é aceito e produz nenhum elegível. A tela oferece as três opções pedidas.
+- Dias são os identificadores exatos do enunciado; dias repetidos são considerados uma única vez. `null` e lista vazia são inválidos.
+- Horários exigem exatamente `HH:mm`, entre 00:00 e 23:59. `24:00` é inválido. Inícios fora da grade são arredondados para o próximo múltiplo de 30 minutos.
+- Faixa menor que a duração é uma consulta válida, sem resultados.
+- Quantidade semanal conta todos os registros de `aulasMarcadas`, inclusive em dias não solicitados.
+- Nomes usam comparação alfabética `pt-BR`, ignorando caixa. Empates completos são resolvidos pelo ID. Não elegíveis mantêm a ordem do arquivo.
+- Os dados de origem são confiáveis conforme as garantias do desafio; falhas de leitura impedem a inicialização, em vez de simular uma lista vazia.
+- A agenda é semanal, sem datas, feriados ou conversão de fuso. A busca não agenda nem reserva aulas.
+- Durante a requisição, o formulário fica desabilitado. O resultado guarda um resumo da consulta efetivamente executada. Há timeout de 15 segundos e mensagens para validação, erro de comunicação e nenhum resultado.
+- Fontes do Google são opcionais; fontes locais de sistema funcionam sem acesso externo.
+- O frontend usa React em StrictMode e Motion para transições de estado, entrada dos cards e indicadores compartilhados (`layoutId`). `MotionConfig` e CSS respeitam movimento reduzido.
+- Rádios e checkboxes nativos mantêm navegação por teclado. A interface anuncia estados com uma região viva e oferece um link para pular à busca.
+- Clicar em um horário abre um `dialog` nativo com professor, idioma, dias e início/fim da aula. O modal gerencia foco e Escape pelo navegador e informa explicitamente que não faz reserva.
+- A consulta exibida guarda os critérios enviados; mudar o formulário não altera silenciosamente os resultados anteriores.
+- Componentes e ilustrações são próprios. Referências visuais consultadas: [Kokonut UI](https://kokonutui.com), [Spell UI](https://spell.sh), [Bklit UI](https://bklit.com) e [Refero](https://refero.design). Motion é a dependência de animação efetivamente instalada; não foram instaladas todas as bibliotecas citadas.
+- A escolha de horário foi inspirada no [Wheel Picker do Kokonut UI](https://kokonutui.com/docs/inputs/wheel-picker), com implementação própria e Radix Popover. Não foi copiado o componente da biblioteca. A rolagem usa CSS scroll-snap e as colunas são listboxes com navegação por setas, Home/End, PageUp/PageDown e números. Aplicar confirma o rascunho; Escape ou fechar descarta.
+- Horas seguem o formato de 24 horas e minutos de 00 a 59. Atalhos de 15 minutos são conveniências, sem restringir a API: os limites da faixa podem ser 18:15 ou 18:17. A restrição a :00/:30 continua aplicada apenas aos inícios de aula calculados no backend.
+- Os atalhos de período preenchem manhã 08:00–12:00, tarde 13:00–18:00 e noite 18:00–22:00. Todos podem ser ajustados depois. A faixa é do aluno; não afirma disponibilidade dos professores antes da busca.
+- O resumo avisa se o fim precede o início ou se a faixa é menor que a duração. Faixa curta continua sendo consulta válida sem resultados, conforme a decisão da API. A validação HTTP continua funcionando independentemente dos avisos da tela.
+- Resultados vazios explicam a limitação concreta: faixa menor que a duração, ausência de professores do idioma, agendas do idioma bloqueadas ou falta de início comum. As conclusões sobre professores são derivadas apenas dos motivos reais de `naoElegiveis`, preservando os três textos obrigatórios da API. Sem dados suficientes, a mensagem é genérica.
+- O resumo dos motivos de exclusão aparece sem precisar abrir o acordeão, inclusive quando há professores elegíveis. Os nomes e motivos individuais continuam em Transparência na busca.
+- As ações partem dos critérios da consulta executada, mesmo se o formulário foi editado depois. Ampliar uma faixa curta mantém o início e estende o fim para caber uma aula; se ultrapassaria 23:59, desloca o início para trás. Testar uma duração menor oferece apenas 30/60/90 que caibam na faixa atual. Buscar no dia inteiro usa 00:00–23:59, preservando os dias, idioma e duração. Nenhuma ação promete vagas antes da nova busca.
+- Rever dias e escolher idioma restauram os critérios da consulta e movem o foco para o controle correspondente; não removem dias ou mudam idioma sem decisão do usuário.
+
+## Verificação automática no GitHub
+
+Ao publicar o projeto, coloque **o conteúdo da pasta `idiomas` na raiz do repositório**, incluindo `.github/workflows/ci.yml`, `api`, `tests`, `web` e `Idiomas.sln`.
+
+A rotina roda em `push`, `pull_request` e por execução manual na aba **Actions**. Ela usa .NET 8 para os 35 testes C# e Node 24 para instalar dependências, compilar a tela, instalar Chromium e rodar os 16 testes de navegador. Não exige banco, credenciais ou API em uma porta pública. O workflow foi preparado e seus comandos foram verificados localmente; a execução hospedada só poderá ser confirmada após publicação no GitHub.
+
+## Evoluções deliberadamente fora desta entrega
+
+Persistência de agendamentos, autenticação e administração de agendas são possibilidades futuras. O desafio pede uma busca semanal a partir do JSON; reservar ou cancelar aulas acrescentaria decisões sobre datas, recorrência, permissões e concorrência. Para esta entrega, o foco é correção das regras, clareza da interface, acessibilidade e testes reproduzíveis.
+
+## Validação realizada e limites
+
+Os 35 testes C# passaram em Release, e a compilação de produção do frontend passou. O exemplo foi conferido por HTTP com os dados oficiais. Os estados da interface também foram conferidos no navegador.
+
+Os 16 testes automatizados de interface passaram no Microsoft Edge e no Chromium. O seletor também foi conferido em larguras de 320, 390, 768, 1024 e 1440 pixels.
+
+Não foram adicionados persistência, autenticação, agendamento de aulas ou implantação em produção. Os testes de interface cobrem os principais estados e interações, sem equivaler a uma auditoria completa de acessibilidade ou de todos os navegadores. A publicação no GitHub e o envio ao recrutador devem ser feitos pelo candidato, que também deve revisar e compreender o código antes da entrevista.
+
+Dados: https://github.com/KingOfLanguages/desafio-tecnico-dev-junior/blob/main/professores.json

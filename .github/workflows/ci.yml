@@ -1,0 +1,40 @@
+name: Verificar projeto
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Testar regras e contrato HTTP
+        run: dotnet test tests/Idiomas.Tests.csproj --configuration Release
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Compilar TypeScript e interface
+        run: npm run build
+      - name: Instalar navegador de testes
+        run: npx playwright install --with-deps chromium
+      - name: Testar interacoes e estados
+        run: npm run test:e2e
