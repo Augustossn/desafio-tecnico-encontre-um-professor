@@ -133,10 +133,6 @@ Ao publicar o projeto, coloque **o conteúdo da pasta `idiomas` na raiz do repos
 
 A rotina roda em `push`, `pull_request` e por execução manual na aba **Actions**. Ela usa .NET 8 para os 35 testes C# e Node 24 para instalar dependências, compilar a tela, instalar Chromium e rodar os 16 testes de navegador. Não exige banco, credenciais ou API em uma porta pública. O workflow foi preparado e seus comandos foram verificados localmente; a execução hospedada só poderá ser confirmada após publicação no GitHub.
 
-## Evoluções deliberadamente fora desta entrega
-
-Persistência de agendamentos, autenticação e administração de agendas são possibilidades futuras. O desafio pede uma busca semanal a partir do JSON; reservar ou cancelar aulas acrescentaria decisões sobre datas, recorrência, permissões e concorrência. Para esta entrega, o foco é correção das regras, clareza da interface, acessibilidade e testes reproduzíveis.
-
 ## Validação realizada e limites
 
 Os 35 testes C# passaram em Release, e a compilação de produção do frontend passou. O exemplo foi conferido por HTTP com os dados oficiais. Os estados da interface também foram conferidos no navegador.
