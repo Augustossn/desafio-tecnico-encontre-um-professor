@@ -14,6 +14,8 @@ A correção foi configurar explicitamente `RouteHandlerOptions.ThrowOnBadReques
 
 ## Revisão pelo candidato
 
+A pedido do candidato, a IA também refatorou as funções C# para facilitar leitura e estudo: expandiu métodos compactos, substituiu nomes abreviados, separou as etapas da busca e organizou os testes em preparação, execução e verificações. As regras e o contrato HTTP foram mantidos e conferidos pela suíte automatizada.
+
 Na melhoria dos resultados vazios, a IA implementou explicações baseadas nos motivos reais de exclusão e botões que reexecutam a busca com critérios explícitos. Foram adicionados 9 testes de interface e 16 testes HTTP em memória, além de um workflow do GitHub Actions. Os 35 testes C# e 16 testes de interface passaram localmente. O workflow ainda depende de publicação para ter sua primeira execução no GitHub.
 
 Outro erro percebido pelo usuário foi a documentação Swagger não abrir na porta 5080, apesar de a IA ter informado que estava pronta. O código havia sido atualizado, mas o processo em execução continuava com a versão anterior. O usuário identificou o 404; a IA confirmou o processo antigo, recompilou, reiniciou a API e executou uma busca pelo Swagger na porta correta. A falha foi afirmar disponibilidade no ambiente sem verificar a instância efetivamente usada.

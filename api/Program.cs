@@ -3,9 +3,17 @@ using Idiomas;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
-var json = File.ReadAllText(Path.Combine(builder.Environment.ContentRootPath, "professores.json"));
-var dados = JsonSerializer.Deserialize<Dados>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web))
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false;
+});
+var caminhoDosProfessores = Path.Combine(
+    builder.Environment.ContentRootPath,
+    "professores.json");
+
+var json = File.ReadAllText(caminhoDosProfessores);
+var opcoesJson = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+var dados = JsonSerializer.Deserialize<Dados>(json, opcoesJson)
     ?? throw new InvalidOperationException("Arquivo de professores inválido.");
 builder.Services.AddSingleton(new BuscaService(dados.Professores));
 builder.Services.AddEndpointsApiExplorer();
@@ -19,16 +27,29 @@ builder.Services.AddSwaggerGen(options =>
     });
     options.OperationFilter<BuscaDocumentation>();
 });
-builder.Services.Configure<Microsoft.AspNetCore.Routing.RouteHandlerOptions>(o => o.ThrowOnBadRequest = true);
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(o => o.SerializerOptions.PropertyNameCaseInsensitive = true);
+builder.Services.Configure<Microsoft.AspNetCore.Routing.RouteHandlerOptions>(options =>
+{
+    options.ThrowOnBadRequest = true;
+});
+
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNameCaseInsensitive = true;
+});
 var app = builder.Build();
 app.Use(async (context, next) =>
 {
-    try { await next(context); }
+    try
+    {
+        await next(context);
+    }
     catch (BadHttpRequestException) when (!context.Response.HasStarted)
     {
         context.Response.StatusCode = 400;
-        await context.Response.WriteAsJsonAsync(new ErroRequisicao("Corpo inválido. Envie um objeto JSON com os campos e tipos esperados."));
+        var erro = new ErroRequisicao(
+            "Corpo inválido. Envie um objeto JSON com os campos e tipos esperados.");
+
+        await context.Response.WriteAsJsonAsync(erro);
     }
 });
 app.UseSwagger();
@@ -38,11 +59,7 @@ app.UseSwaggerUI(options =>
     options.DocumentTitle = "Língua — Documentação da API";
 });
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
-app.MapPost("/api/professores/busca", (Busca busca, BuscaService service) =>
-{
-    var erros = BuscaService.Validar(busca);
-    return erros.Count > 0 ? Results.ValidationProblem(erros, title: "Revise os campos informados.") : Results.Ok(service.Buscar(busca));
-})
+app.MapPost("/api/professores/busca", BuscarProfessores)
 .WithName("BuscarProfessores")
 .WithTags("Professores")
 .WithSummary("Busca professores com horário fixo em comum")
@@ -55,4 +72,21 @@ app.MapPost("/api/professores/busca", (Busca busca, BuscaService service) =>
 .ProducesValidationProblem(StatusCodes.Status400BadRequest);
 app.Run();
 
-public partial class Program { }
+static IResult BuscarProfessores(Busca busca, BuscaService servico)
+{
+    var erros = BuscaService.Validar(busca);
+
+    if (erros.Count > 0)
+    {
+        return Results.ValidationProblem(
+            erros,
+            title: "Revise os campos informados.");
+    }
+
+    var resultado = servico.Buscar(busca);
+    return Results.Ok(resultado);
+}
+
+public partial class Program
+{
+}

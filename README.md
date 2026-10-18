@@ -81,6 +81,8 @@ A lista de não elegíveis acima está resumida; a API devolve todos. Campos inv
 
 ## Organização e algoritmo
 
+As funções C# usam blocos explícitos e nomes descritivos. No serviço, `Buscar` coordena a consulta; `ObterMotivoInicial` verifica idioma e bloqueio; `EncontrarHorarios` percorre os inícios; e `EstaLivreNoDia` verifica disponibilidade e conflitos. Nos testes, preparação, execução e verificações ficam em blocos separados. O `.editorconfig` mantém a formatação de blocos e instruções em múltiplas linhas.
+
 - `api/Models.cs`: contratos e dados.
 - `api/BuscaService.cs`: validação e regra de negócio independente de HTTP.
 - `api/Program.cs`: carregamento do JSON, injeção e endpoint.
